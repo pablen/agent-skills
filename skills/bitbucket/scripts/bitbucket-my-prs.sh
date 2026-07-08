@@ -17,12 +17,12 @@ repo_slug="$2"
 
 result=$("$SCRIPT_DIR/bitbucket-api.sh" GET "/2.0/repositories/${workspace}/${repo_slug}/pullrequests?state=OPEN&pagelen=50")
 
-if [[ $(echo "$result" | /usr/bin/jq '.size') -eq 0 ]]; then
+if [[ $(print -r -- "$result" | /usr/bin/jq '.size') -eq 0 ]]; then
   echo "No open PRs found."
   exit 0
 fi
 
-echo "$result" | /usr/bin/jq -r '
+print -r -- "$result" | /usr/bin/jq -r '
   ["ID", "Title", "Author", "Source", "State"] | @tsv,
   (.values[] | [
     (.id | tostring),

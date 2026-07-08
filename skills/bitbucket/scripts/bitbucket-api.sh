@@ -20,7 +20,7 @@ if [[ -z "${BITBUCKET_API_TOKEN:-}" ]]; then
   echo "" >&2
   echo "Create a Repository Access Token:" >&2
   echo "  1. Go to https://bitbucket.org/<WORKSPACE>/<REPO>/admin/access-tokens" >&2
-  echo "  2. Create token with scopes: Repositories: Read, Pull requests: Read+Write" >&2
+  echo "  2. Create token with scopes: Repositories: Read, Pull requests: Read+Write, Pipelines: Read" >&2
   echo "  3. Save it in ./.bitbucket-token (repo-local, recommended) or ~/.bitbucket-env (global):" >&2
   echo "" >&2
   echo "     BITBUCKET_API_TOKEN=<your-token>" >&2
@@ -89,7 +89,7 @@ if (( status_code >= 400 )); then
     echo "" >&2
     echo "The token may be expired or lack the required scopes." >&2
     echo "Create a new one at: https://bitbucket.org/<WORKSPACE>/<REPO>/admin/access-tokens" >&2
-    echo "Required scopes: Repositories: Read, Pull requests: Read+Write" >&2
+    echo "Required scopes: Repositories: Read, Pull requests: Read+Write, Pipelines: Read" >&2
   fi
   exit 1
 fi
