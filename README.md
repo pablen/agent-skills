@@ -5,13 +5,13 @@ Personal skills for coding agents (Claude Code, Codex, etc.), installable via [s
 ## Install
 
 ```sh
-npx skills add pabloenrici/agent-skills
+npx skills add pablen/agent-skills
 ```
 
 Or a single skill:
 
 ```sh
-npx skills add https://github.com/pabloenrici/agent-skills/tree/main/skills/bitbucket
+npx skills add https://github.com/pablen/agent-skills/tree/main/skills/bitbucket
 ```
 
 ## Skills
