@@ -1,6 +1,6 @@
 ---
 name: commit-messages
-description: Create or propose git commit messages for code changes. Use when the user asks to commit, asks for commit message options, or needs help writing a Conventional Commit. Reads repo-local rules from AGENTS.md and applies them when present.
+description: Use when the user asks to commit, wants commit message options, or needs help writing a Conventional Commit.
 ---
 
 # Commit Messages

@@ -1,6 +1,6 @@
 ---
 name: jira
-description: Use when the user asks to list, search, inspect, create, comment on, transition, or otherwise operate on Jira issues, boards, sprints, or JQL queries. Use Jira REST API directly via curl with Basic Auth from JIRA_URL, JIRA_EMAIL, and JIRA_TOKEN; format JSON responses clearly and prefer GET before any write.
+description: Use for Jira issues (search, create, comment, transition), boards, sprints, and JQL queries.
 model: haiku
 ---
 

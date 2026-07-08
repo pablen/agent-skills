@@ -1,6 +1,6 @@
 ---
 name: frontend-ready-check
-description: Determine whether a frontend task, bug report, or tracker issue is ready to implement by comparing real frontend usage, backend/service support, and related tracker work. Use when a frontend request may depend on backend capabilities, when you need concrete blockers instead of guesses, or when you need to separate what can advance now from what still requires backend or product decisions.
+description: Checks if a frontend task/bug is ready to implement by comparing real frontend usage against backend/service support and related tracker work. Use to find concrete blockers (not guesses) or to separate what can proceed now from what needs backend/product decisions.
 ---
 
 # Frontend Ready Check

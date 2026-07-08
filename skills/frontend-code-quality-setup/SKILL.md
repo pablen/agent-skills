@@ -1,6 +1,6 @@
 ---
 name: frontend-code-quality-setup
-description: Audit and apply a standard set of code quality configurations to a frontend project. Covers VSCode settings, packageManager pinning, scripts, exact dependency version policy, depcheck, optional audit-ci, git hooks, lint-staged, .gitignore hygiene, and agent files (AGENTS.md, CLAUDE.md, GEMINI.md). Supports web frontend, Next.js, Payload CMS, React Native, and Expo projects. Runs interactively — audits first, applies per section after confirmation.
+description: Applies a frontend code-quality baseline (lint, hooks, etc) to a project. Manual, per-project setup — invoke only via /frontend-code-quality-setup, do not auto-trigger from conversation.
 ---
 
 # Frontend Code Quality Setup

@@ -1,6 +1,6 @@
 ---
 name: bitbucket
-description: Use when the user asks to list, inspect, comment on, approve, or merge Bitbucket pull requests, PR comments, reviewers, or repository info. Also for listing pipelines, inspecting pipeline steps, and reading step logs. Uses Bitbucket REST API 2.0 with Repository Access Tokens (Bearer auth).
+description: Use for Bitbucket pull requests (comments, reviewers, approve, merge) and pipelines (list, steps, logs).
 ---
 
 # Bitbucket
