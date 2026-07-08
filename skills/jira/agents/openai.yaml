@@ -1,0 +1,6 @@
+interface:
+  display_name: "Jira"
+  short_description: "Consultar y operar Jira por REST"
+  default_prompt: "Use $jira to list, inspect, or update Jira issues with the REST API."
+policy:
+  allow_implicit_invocation: true

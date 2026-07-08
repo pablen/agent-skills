@@ -1,0 +1,5 @@
+# Local runtime cache written by the jira skill's scripts (real project/user
+# data from whatever Jira instance you point it at) — never publish this.
+skills/jira/data/
+
+.DS_Store
