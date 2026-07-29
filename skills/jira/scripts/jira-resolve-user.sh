@@ -42,6 +42,15 @@ if [[ -z "$query" ]]; then
   exit 1
 fi
 
+case "$(normalize "$query")" in
+  me|yo|mi|mí|currentuser\(\))
+    if (( refresh )); then
+      exec "$script_dir/jira-resolve-current-user.sh" --refresh
+    fi
+    exec "$script_dir/jira-resolve-current-user.sh"
+    ;;
+esac
+
 cache_key="users.json"
 query_normalized="$(normalize "$query")"
 

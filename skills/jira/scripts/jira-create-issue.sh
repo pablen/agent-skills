@@ -17,6 +17,8 @@ Options:
   --sprint-board <BOARD_ID> --sprint-name <SPRINT_NAME> [--sprint-state <STATE>]
   --description <TEXT>
   --description-file <PATH>
+  --description-markdown <TEXT>
+  --description-markdown-file <PATH>
   --description-adf-file <PATH>
   --dry-run
 EOF
@@ -38,6 +40,8 @@ sprint_name=""
 sprint_state=""
 description_text=""
 description_file=""
+description_markdown=""
+description_markdown_file=""
 description_adf_file=""
 dry_run=0
 
@@ -99,6 +103,14 @@ while [[ $# -gt 0 ]]; do
       description_file="${2:-}"
       shift 2
       ;;
+    --description-markdown)
+      description_markdown="${2:-}"
+      shift 2
+      ;;
+    --description-markdown-file)
+      description_markdown_file="${2:-}"
+      shift 2
+      ;;
     --description-adf-file)
       description_adf_file="${2:-}"
       shift 2
@@ -120,8 +132,15 @@ if [[ -z "$project" || -z "$issue_type" || -z "$summary" ]]; then
   exit 1
 fi
 
-if [[ -n "$description_file" && -n "$description_adf_file" ]]; then
-  echo "Use only one of --description-file or --description-adf-file." >&2
+description_sources=0
+[[ -n "$description_text" ]] && (( description_sources += 1 ))
+[[ -n "$description_file" ]] && (( description_sources += 1 ))
+[[ -n "$description_markdown" ]] && (( description_sources += 1 ))
+[[ -n "$description_markdown_file" ]] && (( description_sources += 1 ))
+[[ -n "$description_adf_file" ]] && (( description_sources += 1 ))
+
+if (( description_sources > 1 )); then
+  echo "Use only one description option." >&2
   exit 1
 fi
 
@@ -166,6 +185,10 @@ if [[ -n "$description_adf_file" ]]; then
   description_json="$(/bin/cat "$description_adf_file")"
 elif [[ -n "$description_file" ]]; then
   description_text="$(/bin/cat "$description_file")"
+elif [[ -n "$description_markdown_file" ]]; then
+  description_json="$("$script_dir/jira-markdown-to-adf.sh" --file "$description_markdown_file")"
+elif [[ -n "$description_markdown" ]]; then
+  description_json="$("$script_dir/jira-markdown-to-adf.sh" --text "$description_markdown")"
 fi
 
 if [[ "$description_json" == 'null' && -n "$description_text" ]]; then

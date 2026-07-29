@@ -1,7 +1,6 @@
 ---
 name: jira
 description: Use for Jira issues (search, create, comment, transition), boards, sprints, and JQL queries.
-model: haiku
 ---
 
 # Jira
@@ -15,6 +14,9 @@ For design rationale and tradeoffs, read `references/rationale.md` only when cha
 - Prefer bundled helper scripts in `scripts/`: `jira-api.sh` for generic REST, `jira-transition.sh` for status changes, and the narrow wrappers for frequent reads.
 - For writes that need entity resolution, prefer the bundled resolvers and creators over ad hoc REST payload assembly.
 - Use Jira REST only through those scripts unless there is a specific reason not to.
+- For common issue mutations, use the dedicated wrappers below; do not construct ADF, parent, assignee or issue-link API payloads in the calling agent.
+- Treat `--description` as plain text. For headings, lists or acceptance criteria, use `--description-markdown` or `--description-markdown-file`.
+- Express dependencies semantically with `jira-block-issues.sh --blocker <BLOCKER> --blocked <BLOCKED>`; never infer Jira's `inwardIssue` / `outwardIssue` direction in the calling agent.
 - Default to happy-path execution: run the single command that should answer the request, then inspect the failure only if it errors.
 - When transitioning an issue to `Done`, require a worklog value before sending the request. If the user did not specify it, ask for it or propose `1h` as the default, and wait for confirmation.
 - Never send a transition to `Done` without including the worklog in the same transition payload.
@@ -158,6 +160,40 @@ Behavior:
 - Uses a local cache first and falls back to Jira live search only when needed
 - Supports partial multi-word name matching, so queries like `Lautaro Farías` can match a full display name with middle names
 - Updates the cache after an unambiguous live match
+- Accepts `me`, `yo`, `mí` or `currentUser()` for the authenticated user. That identity is cached without expiry and refreshed explicitly or after an assignment retry.
+
+### Assign issues
+
+Run:
+
+`scripts/jira-assign-issues.sh --to <USER_QUERY|me> <ISSUE_KEY> [ISSUE_KEY...]`
+
+Behavior:
+- Resolves the assignee once, using the persistent user cache when available.
+- Assigns every supplied issue and prints a compact TSV confirmation.
+- If an assignment fails, refreshes the cached assignee once and retries before surfacing the error.
+- Use this for “asigname estas issues a mí” instead of reading `/myself` and hand-building updates.
+
+### Update issue
+
+Run:
+
+`scripts/jira-update-issue.sh <ISSUE_KEY> [--description-markdown <TEXT>|--description-markdown-file <PATH>] [--assignee <USER_QUERY|me>] [--parent <ISSUE_KEY>] [--add-label <LABEL>]`
+
+Behavior:
+- Converts the supported Markdown subset to Jira ADF before updating a rich description.
+- Resolves assignees and preserves existing labels when adding one.
+- Use this for routine description, assignee, parent and label edits instead of generic update payloads.
+
+### Block issues
+
+Run:
+
+`scripts/jira-block-issues.sh --blocker <ISSUE_KEY> --blocked <ISSUE_KEY> [--replace-reverse]`
+
+Behavior:
+- Creates the relationship “blocker blocks blocked” with the correct Jira link direction.
+- `--replace-reverse` removes an existing inverse Blocks link before creating the intended relationship; use it only for repairs.
 
 ### Resolve Jira component
 
@@ -199,12 +235,13 @@ Behavior:
 
 Run:
 
-`scripts/jira-create-issue.sh --project <KEY> --type <ISSUE_TYPE> --summary <TEXT> [--assignee <QUERY>] [--component <NAME>] [--sprint-project <KEY> --sprint-name <SPRINT_NAME>] [--sprint-from <ISSUE_KEY>] [--description <TEXT>]`
+`scripts/jira-create-issue.sh --project <KEY> --type <ISSUE_TYPE> --summary <TEXT> [--assignee <QUERY>] [--component <NAME>] [--sprint-project <KEY> --sprint-name <SPRINT_NAME>] [--sprint-from <ISSUE_KEY>] [--description <TEXT>|--description-markdown <TEXT>|--description-markdown-file <PATH>]`
 
 Behavior:
 - Resolves assignee, components, sprint field id, and sprint id as needed
 - Prefer `--sprint-project <KEY> --sprint-name <SPRINT_NAME>` when the user says “add it to sprint N” without naming a board
 - Avoids manual payload assembly in common create flows
+- Converts headings, paragraphs, bullet lists and task checklists to Jira ADF when using a Markdown description option
 - Supports `--dry-run` to inspect the final payload before writing
 
 ### Create bug from issue

@@ -76,6 +76,31 @@ Tradeoff:
 - More helper scripts need maintenance
 - This is acceptable when each wrapper removes repeated reasoning and repeated intermediate reads
 
+### Make structured writes semantic
+
+Rich descriptions and blocking relationships have Jira-specific data shapes that are easy to invert or flatten when assembled ad hoc. Use a Markdown-to-ADF converter for supported issue descriptions and a blocker/blocked wrapper for dependencies.
+
+Why:
+- Agents can state the intended relationship instead of reasoning about `inwardIssue` and `outwardIssue`.
+- Headings, lists and acceptance criteria remain readable in Jira.
+- Repairs can replace a detected inverse link deterministically.
+
+Tradeoff:
+- The Markdown converter deliberately supports only the operational subset used in issue descriptions.
+- This is acceptable because unsupported rich content can still be supplied as explicit ADF when necessary.
+
+### Cache the authenticated user for “me” assignments
+
+The authenticated account id is stable enough to cache without expiry, just like resolved teammate ids. Assignment wrappers resolve it once and reuse it across every target issue.
+
+Why:
+- “Assign these issues to me” is a common batch operation.
+- It removes an avoidable identity lookup from the calling agent and keeps the write shape deterministic.
+
+Tradeoff:
+- A changed authentication identity can remain cached until an explicit refresh or a failed assignment triggers one retry.
+- This mirrors the persistent teammate cache while allowing a normal assignment failure to self-heal stale identity data.
+
 ### Keep write text brief and operational
 
 Issue descriptions and comments should be written in Spanish by default and should stay concise, direct, and useful for execution.
