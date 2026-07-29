@@ -69,10 +69,10 @@ Behavior:
 
 Run exactly:
 
-`scripts/jira-issue.sh <KEY>`
+`scripts/jira-issue.sh <KEY> [--description]`
 
 Behavior:
-- Fetches one issue by key
+- Fetches one issue by key; add `--description` to include its description as Markdown-like text, including task checkboxes.
 - Returns compact key-value output for direct summarization
 - No extra reads unless the request explicitly asks for comments, history, or transitions
 
@@ -178,10 +178,10 @@ Behavior:
 
 Run:
 
-`scripts/jira-update-issue.sh <ISSUE_KEY> [--description-markdown <TEXT>|--description-markdown-file <PATH>] [--assignee <USER_QUERY|me>] [--parent <ISSUE_KEY>] [--add-label <LABEL>]`
+`scripts/jira-update-issue.sh <ISSUE_KEY> [--summary <TEXT>] [--description-markdown <TEXT>|--description-markdown-file <PATH>] [--assignee <USER_QUERY|me>] [--parent <ISSUE_KEY>] [--add-label <LABEL>]`
 
 Behavior:
-- Converts the supported Markdown subset to Jira ADF before updating a rich description.
+- Updates the summary and converts the supported Markdown subset to Jira ADF before updating a rich description.
 - Resolves assignees and preserves existing labels when adding one.
 - Use this for routine description, assignee, parent and label edits instead of generic update payloads.
 

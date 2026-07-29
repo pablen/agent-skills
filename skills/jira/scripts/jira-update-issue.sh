@@ -5,6 +5,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'EOF'
 Usage:
+  jira-update-issue.sh <ISSUE_KEY> --summary <TEXT>
   jira-update-issue.sh <ISSUE_KEY> --description-markdown <TEXT>
   jira-update-issue.sh <ISSUE_KEY> --description-markdown-file <PATH>
   jira-update-issue.sh <ISSUE_KEY> --assignee <USER_QUERY|me>
@@ -25,12 +26,17 @@ issue_key="$1"
 shift
 description_markdown=""
 description_markdown_file=""
+summary=""
 assignee_query=""
 parent_key=""
 add_label=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --summary)
+      summary="${2:-}"
+      shift 2
+      ;;
     --description-markdown)
       description_markdown="${2:-}"
       shift 2
@@ -69,7 +75,7 @@ if [[ -n "$description_markdown_file" && ! -f "$description_markdown_file" ]]; t
   exit 1
 fi
 
-if [[ -z "$description_markdown" && -z "$description_markdown_file" && -z "$assignee_query" && -z "$parent_key" && -z "$add_label" ]]; then
+if [[ -z "$summary" && -z "$description_markdown" && -z "$description_markdown_file" && -z "$assignee_query" && -z "$parent_key" && -z "$add_label" ]]; then
   usage
   exit 1
 fi
@@ -93,11 +99,13 @@ if [[ -n "$add_label" ]]; then
 fi
 
 payload="$(jq -n \
+  --arg summary "$summary" \
   --arg assigneeId "$assignee_id" \
   --arg parentKey "$parent_key" \
   --argjson description "$description_json" \
   --argjson labels "$labels_json" '
     {fields: {}}
+    | if ($summary | length) > 0 then .fields.summary = $summary else . end
     | if $description != null then .fields.description = $description else . end
     | if ($assigneeId | length) > 0 then .fields.assignee = {accountId: $assigneeId} else . end
     | if ($parentKey | length) > 0 then .fields.parent = {key: $parentKey} else . end
