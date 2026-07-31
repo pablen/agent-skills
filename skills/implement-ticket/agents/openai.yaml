@@ -1,0 +1,4 @@
+interface:
+  display_name: "Implement Ticket"
+  short_description: "Prepare or execute Jira ticket work"
+  default_prompt: "Use $implement-ticket to prepare a handoff prompt for MPIX-67."
