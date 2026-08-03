@@ -12,7 +12,8 @@ Use this skill when proposing or creating git commits.
 1. Read staged changes or the intended change set before writing the message.
 2. Read repo-local rules from `AGENTS.md` if present.
 3. If the user did not give the exact commit message, propose 3 strong variants and stop for user selection.
-4. If the repo requires Jira or issue suffix rules, apply them.
+4. If the repo requires a Jira or issue suffix, append the key in brackets:
+   `[HIBA-58]`.
 5. When the repo requires `AI_MODE=1` for commit / push / hooks, preserve that behavior.
 
 ## Message Shape
