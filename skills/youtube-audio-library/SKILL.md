@@ -22,6 +22,15 @@ below — not hardcoded end-to-end automation. This means the user can ask to al
 the workflow slightly in any given session (skip a step, change an order, apply a
 one-off criterion) and the skill should accommodate it rather than resist it.
 
+## Presenting choices
+
+Whenever you present the user a decision with a fixed set of options — which
+search results to download, which format to convert to, what to do about a
+failed download — number the options (`1) ... 2) ... 3) ...`) so the user can
+reply with a bare number (or a few, e.g. "1 3 5") instead of retyping choices
+back at you. This applies throughout the workflow below, not just at the steps
+that call it out explicitly.
+
 ## Library location
 
 The library lives in the **current working directory** of the session:
@@ -54,13 +63,15 @@ a different upload/video_id) is your judgment call, not a script's.
    album, lyric video, or long intro/outro cut? Cross-reference against
    `catalog.csv` (by `video_id` first, then by normalized song+artist for
    possible re-uploads) to separate "already have" from "candidates."
-3. **Propose and confirm.** Present a short list of candidates to the user with
-   your reasoning, including the metadata that supports it — at minimum source
-   duration (formatted mm:ss) and channel name; view count too when it helps
-   distinguish an official upload from a fan upload. Let them refine (narrow the
-   search, drop specific results, ask for more options) before anything gets
-   downloaded. Do not download automatically just because results look
-   plausible.
+3. **Propose and confirm.** Present the candidates as a numbered markdown table —
+   columns `#`, Song, Channel, Duration (mm:ss), Views — so the metadata backing
+   your reasoning is visible at a glance and the user can reply with bare numbers
+   (see "Presenting choices" below) instead of retyping titles. Add a Notes
+   column, or a line below the table, when something needs flagging (fan upload,
+   duplicate of an existing catalog entry, unusually long/short for the song).
+   Let the user refine (narrow the search, drop specific numbers, ask for more
+   options) before anything gets downloaded. Do not download automatically just
+   because results look plausible.
 4. **Download** each confirmed video: `scripts/download.py --url <url>
    --library-root .`. This always grabs the best available audio in its native
    codec/container — no forced re-encode. One automatic retry on failure; if it
@@ -83,9 +94,10 @@ a different upload/video_id) is your judgment call, not a script's.
    instead of silently accepting a duplicate.
 7. **Report results** to the user: what got downloaded, with format/bitrate/
    duration, and what failed and why.
-8. **Offer conversion** as a separate, optional step — never automatic. Suggest
-   the default (MP3 192kbps) but let the user pick another format/bitrate or
-   decline entirely.
+8. **Offer conversion** as a separate, optional step — never automatic. Present
+   it as numbered options, e.g. `1) Convert to MP3 192kbps (recommended)  2)
+   Another format/bitrate  3) Skip conversion`, so the user can answer with a
+   bare number.
 9. If accepted, **convert** each file: `scripts/convert.py --src <original_path>
    --library-root . --artist "..." --song "..." [--target-format mp3]
    [--target-bitrate 192]`. The script itself decides whether conversion is
