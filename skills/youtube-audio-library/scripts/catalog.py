@@ -42,6 +42,18 @@ def ensure_csv(path: Path, header):
             csv.writer(f).writerow(header)
 
 
+def find_rows(path: Path, video_id: str, kind=None):
+    """Rows already on disk matching video_id (and kind, for files.csv)."""
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    return [
+        r for r in rows
+        if r["video_id"] == video_id and (kind is None or r.get("kind") == kind)
+    ]
+
+
 def cmd_init(args):
     root = Path(args.library_root)
     (root / "originals").mkdir(parents=True, exist_ok=True)
@@ -55,12 +67,19 @@ def cmd_add_song(args):
     root = Path(args.library_root)
     path = catalog_csv(root)
     ensure_csv(path, CATALOG_HEADER)
+    existing = find_rows(path, args.video_id)
     with path.open("a", newline="", encoding="utf-8") as f:
         csv.writer(f).writerow([
             args.video_id, args.song, args.artist, args.duration_sec,
             args.source_url, date.today().isoformat(), args.notes or "",
         ])
-    print(json.dumps({"status": "ok", "added": "catalog.csv", "video_id": args.video_id}))
+    result = {"status": "ok", "added": "catalog.csv", "video_id": args.video_id}
+    if existing:
+        result["warning"] = (
+            f"video_id {args.video_id} was already in catalog.csv as "
+            f"\"{existing[0]['song']}\" — check for a duplicate row"
+        )
+    print(json.dumps(result, ensure_ascii=False))
 
 
 def cmd_add_file(args):
@@ -87,11 +106,18 @@ def cmd_add_file(args):
 
     path = files_csv(root)
     ensure_csv(path, FILES_HEADER)
+    existing = find_rows(path, args.video_id, kind=args.kind)
     with path.open("a", newline="", encoding="utf-8") as f:
         csv.writer(f).writerow([
             args.video_id, args.kind, fmt, bitrate, size_bytes, path_val, date.today().isoformat(),
         ])
-    print(json.dumps({"status": "ok", "added": "files.csv", "video_id": args.video_id}))
+    result = {"status": "ok", "added": "files.csv", "video_id": args.video_id}
+    if existing:
+        result["warning"] = (
+            f"video_id {args.video_id} already has a '{args.kind}' row in files.csv "
+            f"({existing[0]['path']}) — check for a duplicate"
+        )
+    print(json.dumps(result, ensure_ascii=False))
 
 
 def cmd_list(args):
