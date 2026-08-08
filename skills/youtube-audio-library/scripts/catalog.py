@@ -15,7 +15,9 @@ Subcommands:
            --size-bytes ... --path ...] [--from-json <path|->]
            (format/bitrate/size_bytes/path can come from organize.py's or
            convert.py's own JSON output instead of being re-typed)
-  list                           dump both csv files as JSON
+  list [--artist ... | --video-id ...]
+                                 dump both csv files as JSON, optionally
+                                 filtered (keeps the library readable as it grows)
 """
 import argparse
 import csv
@@ -129,10 +131,20 @@ def cmd_list(args):
         with path.open(newline="", encoding="utf-8") as f:
             return list(csv.DictReader(f))
 
-    print(json.dumps({
-        "catalog": read(catalog_csv(root)),
-        "files": read(files_csv(root)),
-    }, ensure_ascii=False, indent=2))
+    catalog_rows = read(catalog_csv(root))
+    files_rows = read(files_csv(root))
+
+    if args.video_id:
+        catalog_rows = [r for r in catalog_rows if r["video_id"] == args.video_id]
+    if args.artist:
+        needle = args.artist.lower()
+        catalog_rows = [r for r in catalog_rows if r["artist"].lower() == needle]
+
+    if args.video_id or args.artist:
+        kept_ids = {r["video_id"] for r in catalog_rows}
+        files_rows = [r for r in files_rows if r["video_id"] in kept_ids]
+
+    print(json.dumps({"catalog": catalog_rows, "files": files_rows}, ensure_ascii=False, indent=2))
 
 
 def main():
@@ -165,7 +177,10 @@ def main():
     ))
     p.set_defaults(func=cmd_add_file)
 
-    sub.add_parser("list").set_defaults(func=cmd_list)
+    p = sub.add_parser("list")
+    p.add_argument("--artist", help="Exact match, case-insensitive")
+    p.add_argument("--video-id")
+    p.set_defaults(func=cmd_list)
 
     args = parser.parse_args()
     args.func(args)
