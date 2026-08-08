@@ -11,13 +11,16 @@ Subcommands:
                                  files.csv in --library-root if missing
   add-song --video-id ... --song ... --artist ... --duration-sec ...
            --source-url ... [--notes ...]
-  add-file --video-id ... --kind original|converted --format ... --bitrate ...
-           --size-bytes ... --path ...
+  add-file --video-id ... --kind original|converted [--format ... --bitrate ...
+           --size-bytes ... --path ...] [--from-json <path|->]
+           (format/bitrate/size_bytes/path can come from organize.py's or
+           convert.py's own JSON output instead of being re-typed)
   list                           dump both csv files as JSON
 """
 import argparse
 import csv
 import json
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -62,12 +65,31 @@ def cmd_add_song(args):
 
 def cmd_add_file(args):
     root = Path(args.library_root)
+    fmt, bitrate, size_bytes, path_val = args.format, args.bitrate, args.size_bytes, args.path
+
+    if args.from_json:
+        raw = sys.stdin.read() if args.from_json == "-" else Path(args.from_json).read_text(encoding="utf-8")
+        data = json.loads(raw)
+        fmt = fmt or data.get("format")
+        bitrate = bitrate or data.get("bitrate_kbps")
+        size_bytes = size_bytes or data.get("size_bytes")
+        path_val = path_val or data.get("path")
+
+    missing = [name for name, val in (
+        ("format", fmt), ("bitrate", bitrate), ("size_bytes", size_bytes), ("path", path_val),
+    ) if val is None]
+    if missing:
+        print(json.dumps({
+            "status": "failed",
+            "error": f"missing fields: {', '.join(missing)} (pass explicitly or via --from-json)",
+        }))
+        return
+
     path = files_csv(root)
     ensure_csv(path, FILES_HEADER)
     with path.open("a", newline="", encoding="utf-8") as f:
         csv.writer(f).writerow([
-            args.video_id, args.kind, args.format, args.bitrate,
-            args.size_bytes, args.path, date.today().isoformat(),
+            args.video_id, args.kind, fmt, bitrate, size_bytes, path_val, date.today().isoformat(),
         ])
     print(json.dumps({"status": "ok", "added": "files.csv", "video_id": args.video_id}))
 
@@ -106,10 +128,15 @@ def main():
     p = sub.add_parser("add-file")
     p.add_argument("--video-id", required=True)
     p.add_argument("--kind", required=True, choices=["original", "converted"])
-    p.add_argument("--format", required=True)
-    p.add_argument("--bitrate", required=True)
-    p.add_argument("--size-bytes", required=True)
-    p.add_argument("--path", required=True)
+    p.add_argument("--format")
+    p.add_argument("--bitrate")
+    p.add_argument("--size-bytes")
+    p.add_argument("--path")
+    p.add_argument("--from-json", help=(
+        "Path to a JSON file, or '-' for stdin, containing organize.py/convert.py's "
+        "own output. Fills format/bitrate/size_bytes/path from it when not passed "
+        "explicitly, so those numbers don't need to be re-typed by hand."
+    ))
     p.set_defaults(func=cmd_add_file)
 
     sub.add_parser("list").set_defaults(func=cmd_list)
