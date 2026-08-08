@@ -65,27 +65,55 @@ def cmd_init(args):
     print(json.dumps({"status": "ok", "library_root": str(root.resolve())}))
 
 
-def cmd_add_song(args):
-    root = Path(args.library_root)
+def add_song(root: Path, video_id, song, artist, duration_sec, source_url, notes=""):
+    """Append one row to catalog.csv. Returns the same dict cmd_add_song prints."""
     path = catalog_csv(root)
     ensure_csv(path, CATALOG_HEADER)
-    existing = find_rows(path, args.video_id)
+    existing = find_rows(path, video_id)
     with path.open("a", newline="", encoding="utf-8") as f:
         csv.writer(f).writerow([
-            args.video_id, args.song, args.artist, args.duration_sec,
-            args.source_url, date.today().isoformat(), args.notes or "",
+            video_id, song, artist, duration_sec, source_url, date.today().isoformat(), notes or "",
         ])
-    result = {"status": "ok", "added": "catalog.csv", "video_id": args.video_id}
+    result = {"status": "ok", "added": "catalog.csv", "video_id": video_id}
     if existing:
         result["warning"] = (
-            f"video_id {args.video_id} was already in catalog.csv as "
+            f"video_id {video_id} was already in catalog.csv as "
             f"\"{existing[0]['song']}\" — check for a duplicate row"
         )
-    print(json.dumps(result, ensure_ascii=False))
+    return result
+
+
+def add_file(root: Path, video_id, kind, fmt, bitrate, size_bytes, path_val):
+    """Append one row to files.csv. Returns the same dict cmd_add_file prints."""
+    missing = [name for name, val in (
+        ("format", fmt), ("bitrate", bitrate), ("size_bytes", size_bytes), ("path", path_val),
+    ) if val is None]
+    if missing:
+        return {"status": "failed", "error": f"missing fields: {', '.join(missing)}"}
+
+    path = files_csv(root)
+    ensure_csv(path, FILES_HEADER)
+    existing = find_rows(path, video_id, kind=kind)
+    with path.open("a", newline="", encoding="utf-8") as f:
+        csv.writer(f).writerow([video_id, kind, fmt, bitrate, size_bytes, path_val, date.today().isoformat()])
+    result = {"status": "ok", "added": "files.csv", "video_id": video_id}
+    if existing:
+        result["warning"] = (
+            f"video_id {video_id} already has a '{kind}' row in files.csv "
+            f"({existing[0]['path']}) — check for a duplicate"
+        )
+    return result
+
+
+def cmd_add_song(args):
+    print(json.dumps(
+        add_song(Path(args.library_root), args.video_id, args.song, args.artist,
+                  args.duration_sec, args.source_url, args.notes),
+        ensure_ascii=False,
+    ))
 
 
 def cmd_add_file(args):
-    root = Path(args.library_root)
     fmt, bitrate, size_bytes, path_val = args.format, args.bitrate, args.size_bytes, args.path
 
     if args.from_json:
@@ -96,29 +124,9 @@ def cmd_add_file(args):
         size_bytes = size_bytes or data.get("size_bytes")
         path_val = path_val or data.get("path")
 
-    missing = [name for name, val in (
-        ("format", fmt), ("bitrate", bitrate), ("size_bytes", size_bytes), ("path", path_val),
-    ) if val is None]
-    if missing:
-        print(json.dumps({
-            "status": "failed",
-            "error": f"missing fields: {', '.join(missing)} (pass explicitly or via --from-json)",
-        }))
-        return
-
-    path = files_csv(root)
-    ensure_csv(path, FILES_HEADER)
-    existing = find_rows(path, args.video_id, kind=args.kind)
-    with path.open("a", newline="", encoding="utf-8") as f:
-        csv.writer(f).writerow([
-            args.video_id, args.kind, fmt, bitrate, size_bytes, path_val, date.today().isoformat(),
-        ])
-    result = {"status": "ok", "added": "files.csv", "video_id": args.video_id}
-    if existing:
-        result["warning"] = (
-            f"video_id {args.video_id} already has a '{args.kind}' row in files.csv "
-            f"({existing[0]['path']}) — check for a duplicate"
-        )
+    result = add_file(Path(args.library_root), args.video_id, args.kind, fmt, bitrate, size_bytes, path_val)
+    if result["status"] == "failed":
+        result["error"] += " (pass explicitly or via --from-json)"
     print(json.dumps(result, ensure_ascii=False))
 
 

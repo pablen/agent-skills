@@ -163,3 +163,27 @@ guías y defaults documentados en la skill — no lógica rígida hardcodeada. E
 permite que, sesión a sesión, el usuario pueda pedir alterar levemente el workflow
 default (saltear un paso, cambiar un orden, usar otro criterio puntual) sin que la
 skill se lo impida por estar todo automatizado de punta a punta.
+
+## Mejoras post-uso real (2026-08-08)
+
+Tras usar la skill para armar una biblioteca real, surgieron cuatro problemas de
+fricción/calidad de datos concretos, no hipotéticos:
+
+- **`add-file` obligaba a re-tipear a mano** el `format`/`bitrate`/`size_bytes` que
+  `organize.py`/`convert.py` ya habían impreso en su propio JSON. En la práctica esto
+  hizo que se catalogara un bitrate placeholder en vez del real reportado por
+  `download.py` para varios temas. Fix: `add-file --from-json <path|->` lee esos
+  campos directo del JSON de esos scripts; los flags explícitos siguen pudiendo
+  pisarlos si se pasan.
+- **Tres invocaciones manuales encadenadas** (`organize.py` → `add-song` → `add-file`)
+  por canción, cada una con superficie de error propia (de hecho, durante el uso real
+  se pisó el CLI real de `catalog.py` con flags que no existían). Fix: `ingest.py`
+  combina las tres en una sola llamada, leyendo el metadata real del archivo ya
+  organizado vía `ffprobe` — nada se re-tipea.
+- **Sin protección contra `video_id` duplicado.** Por diseño (decisión #5) el
+  cruce contra el catálogo sigue siendo criterio del agente, no lógica rígida — pero
+  ahora `add-song`/`add-file` devuelven un campo `warning` si el `video_id` ya
+  existía, en vez de agregar la fila duplicada en silencio.
+- **`catalog.py list` siempre volcaba los dos CSV completos.** Para una biblioteca
+  que crece durante meses eso se vuelve caro de leer. Fix: `list --artist ...` /
+  `--video-id ...` filtra antes de devolver el JSON.

@@ -66,13 +66,21 @@ a different upload/video_id) is your judgment call, not a script's.
    codec/container — no forced re-encode. One automatic retry on failure; if it
    fails twice, note it and move on to the rest of the batch (don't abort the
    whole batch for one failure).
-5. **Organize** each successful download: `scripts/organize.py --src <staged_path>
-   --library-root . --artist "..." --song "..."`. Normalize the artist/song name
-   yourself from the video title (strip channel branding, "(Official Video)",
-   etc.) before passing them in. Collaborations go in the song name, e.g. `Song
-   (feat. Other Artist)` — never a compound artist folder.
-6. **Update the catalog** for each organized file: `scripts/catalog.py
-   --library-root . add-song ...` and `add-file --kind original ...`.
+5. **Organize and catalog** each successful download in one step:
+   `scripts/ingest.py --src <staged_path> --library-root . --artist "..."
+   --song "..." --video-id <id> --source-url <url>`. Normalize the artist/song
+   name yourself from the video title (strip channel branding, "(Official
+   Video)", etc.) before passing them in. Collaborations go in the song name,
+   e.g. `Song (feat. Other Artist)` — never a compound artist folder.
+   `ingest.py` moves the file into `originals/<Artist>/`, then adds it to both
+   `catalog.csv` and `files.csv` by reading its real format/bitrate/duration off
+   the organized file — nothing gets hand-typed, which is what you want (a
+   wrong number here silently corrupts the catalog). If you need the two steps
+   separately (e.g. re-cataloging a file that's already organized), use
+   `organize.py` and `catalog.py add-song`/`add-file --from-json` directly.
+6. If any step in `ingest.py`'s response carries a `warning` field, the
+   `video_id` already had a row in the catalog — surface that to the user
+   instead of silently accepting a duplicate.
 7. **Report results** to the user: what got downloaded, with format/bitrate/
    duration, and what failed and why.
 8. **Offer conversion** as a separate, optional step — never automatic. Suggest
@@ -83,8 +91,10 @@ a different upload/video_id) is your judgment call, not a script's.
    [--target-bitrate 192]`. The script itself decides whether conversion is
    actually needed (skips if the source is already the target format at or below
    the target bitrate; a different container always gets converted regardless of
-   its bitrate). Continue through failures and report a summary at the end.
-   Update `files.csv` with `add-file --kind converted ...` for each success.
+   its bitrate). Continue through failures and report a summary at the end. For
+   each success, update `files.csv` by piping convert.py's own JSON output into
+   `catalog.py add-file --kind converted --from-json -` — again, no re-typed
+   numbers.
 
 ## Importing a pre-existing library
 
@@ -100,11 +110,15 @@ All scripts print a single JSON object/array to stdout and never prompt
 interactively.
 
 - `search.py --query Q [--count 20] [--min-duration S] [--max-duration S]`
-- `catalog.py --library-root DIR init|add-song|add-file|list [...]`
-- `scan.py --dir DIR [--ext mp3 --ext ogg ...]`
 - `download.py --url URL --library-root DIR`
+- `ingest.py --src PATH --library-root DIR --artist A --song S --video-id ID --source-url URL [--notes N]`
+  (organize.py + catalog.py add-song + add-file(original) in one call)
 - `organize.py --src PATH --library-root DIR --artist A --song S`
 - `convert.py --src PATH --library-root DIR --artist A --song S [--target-format mp3] [--target-bitrate 192]`
+- `catalog.py --library-root DIR init|add-song|add-file|list [...]`
+  - `add-file --video-id ID --kind original|converted [--format F --bitrate B --size-bytes N --path P] [--from-json PATH|-]`
+  - `list [--artist A] [--video-id ID]`
+- `scan.py --dir DIR [--ext mp3 --ext ogg ...]`
 
 Requires `yt-dlp`, `ffmpeg`/`ffprobe`, and the `mutagen` Python package on PATH.
 
