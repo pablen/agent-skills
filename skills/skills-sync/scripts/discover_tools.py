@@ -47,9 +47,12 @@ TOOLS = {
         "verify_cmd": ["gemini", "skills", "list", "--all"],
     },
     "pi": {
-        "mode": "per_skill_symlink",
+        "mode": "hub_alias",
+        # Pi's own docs (docs/skills.md, shipped with @earendil-works/pi-coding-agent)
+        # list ~/.agents/skills/ as a global skill location alongside its own
+        # ~/.pi/agent/skills/ — no per-skill symlink needed, same as Gemini.
         "candidates": ["~/.pi/agent/skills"],
-        "binary": None,  # generic name, `which pi` is unreliable — skip the binary check
+        "binary": "pi",
     },
 }
 

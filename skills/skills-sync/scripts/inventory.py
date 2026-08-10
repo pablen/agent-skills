@@ -20,8 +20,8 @@ LOCKFILE = Path.home() / ".agents" / ".skill-lock.json"
 TOOL_DIRS = {
     "claude": Path.home() / ".claude" / "skills",
     "codex": Path.home() / ".codex" / "skills",
-    "pi": Path.home() / ".pi" / "agent" / "skills",
-    # gemini deliberately excluded: mode "hub_alias", no per-skill dir to check
+    # gemini and pi deliberately excluded: mode "hub_alias" (see discover_tools.py's
+    # TOOLS table) — both read ~/.agents/skills directly, no per-skill dir to check.
 }
 
 
