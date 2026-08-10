@@ -18,8 +18,8 @@ For design rationale and tradeoffs, read `references/rationale.md` only when cha
 - Treat `--description` as plain text. For headings, lists or acceptance criteria, use `--description-markdown` or `--description-markdown-file`.
 - Express dependencies semantically with `jira-block-issues.sh --blocker <BLOCKER> --blocked <BLOCKED>`; never infer Jira's `inwardIssue` / `outwardIssue` direction in the calling agent.
 - Default to happy-path execution: run the single command that should answer the request, then inspect the failure only if it errors.
-- When transitioning an issue to `Done`, require a worklog value before sending the request. If the user did not specify it, ask for it or propose `1h` as the default, and wait for confirmation.
-- Never send a transition to `Done` without including the worklog in the same transition payload.
+- When transitioning an issue to `Done`, require a worklog value before sending the request, unless Jira's target transition does not accept worklogs (commonly Epics). If the user did not specify a required worklog, ask for it or propose `1h` as the default, and wait for confirmation.
+- Never send a transition to `Done` without an inline worklog when the target transition supports it. If Jira rejects the worklog field, inspect the available transitions and send the supported transition without a worklog; report that the workflow does not accept one.
 - When creating or editing Jira issues or comments, write in Spanish by default unless the user explicitly asks for another language.
 - Write issue descriptions and comments in a concise, direct style. Avoid ceremonial framing, generic filler, and excessive narrative.
 - For bug reports, include the suspected failing area or offending code path only when it materially helps debugging. Keep it short and concrete.
@@ -103,16 +103,17 @@ Behavior:
 ### "Pasar <KEY> a Done"
 
 Workflow:
-- Require a worklog value before writing. If the user did not provide one, ask a short follow-up such as `Indicate the worklog to log for Done, or confirm 1h.`
-- Send the transition with inline worklog, for example:
+- Require a worklog value before writing when the transition supports it. If the user did not provide one, ask a short follow-up such as `Indicate the worklog to log for Done, or confirm 1h.`
+- Send supported transitions with inline worklog, for example:
 
 `scripts/jira-transition.sh <KEY> Done --worklog 1h`
 
 Behavior:
 - Do not read transitions first in the common case
 - The script uses cached ids when available and falls back to live lookup automatically
-- Do not send a plain `Done` transition first and "fix it later" with a separate worklog request
-- Treat inline worklog on `Done` as the default company-safe path unless the user explicitly asks for a different Jira workflow
+- Do not send a plain `Done` transition first and "fix it later" with a separate worklog request when the transition supports worklogs.
+- If Jira rejects the inline `worklog` field, use `jira-transitions.sh <KEY>` to resolve the Done id, then use `jira-api.sh POST /rest/api/3/issue/<KEY>/transitions '{"transition":{"id":"<ID>"}}'`. This is the accepted path for workflows such as Epics that do not expose worklog on the transition screen.
+- Treat inline worklog on `Done` as the default company-safe path unless Jira rejects it or the user explicitly asks for a different Jira workflow.
 
 ### "Comentar <KEY>"
 
