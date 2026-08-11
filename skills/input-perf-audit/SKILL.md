@@ -1,11 +1,11 @@
 ---
 name: input-perf-audit
-description: Audit web form input performance with reproducible typing bursts, render-scope measurements, input-to-frame latency, and controlled isolation experiments. Use when a field or form feels slow, drops or eats characters, moves the caret incorrectly, triggers excessive rerenders, performs synchronous or remote validation while typing, or needs a before/after performance check; especially useful for React, React Hook Form, masked inputs, controlled inputs, and async field enhancements.
+description: Run an explicitly requested web form input performance audit with reproducible typing bursts, render-scope measurements, input-to-frame latency, and controlled isolation experiments. Use only when the user explicitly invokes `$input-perf-audit` or names `input-perf-audit`; do not activate automatically from reports of slow fields, dropped characters, caret problems, excessive rerenders, validation, or masked-input issues.
 ---
 
 # Input Performance Audit
 
-Diagnose typing problems with comparable evidence before changing production behavior. Treat the audit as read-only diagnosis unless the user also asks for a fix.
+Run this workflow only after explicit invocation. Diagnose typing problems with comparable evidence before changing production behavior. Treat the audit as read-only diagnosis unless the user also asks for a fix.
 
 ## Core rules
 

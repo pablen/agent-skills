@@ -3,4 +3,4 @@ interface:
   short_description: "Check whether a frontend task is implementation-ready"
   default_prompt: "Assess whether this frontend task is ready by comparing frontend, backend, and tracker evidence."
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
