@@ -1,0 +1,4 @@
+interface:
+  display_name: "Input Performance Audit"
+  short_description: "Audit typing latency and form rerenders"
+  default_prompt: "Use $input-perf-audit to diagnose typing latency and excessive rerenders in this form field."
