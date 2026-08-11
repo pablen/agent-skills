@@ -45,6 +45,7 @@ Capture:
 - exact input sequence and expected displayed/canonical value;
 - whether the symptom is dropped characters, visible delay, caret movement, form-wide updates, or request churn;
 - a nearby reference field that feels correct;
+- what the target field does that the reference does not: mask, async validation, formatting, query enhancement, paste interception, etc.;
 - browser, dev/production mode, and any CPU throttling.
 
 Use the same browser session, string length, focus setup, and run count for target and reference. Warm both fields before recording results.
@@ -89,7 +90,7 @@ Use DevTools highlighting only to locate suspicious scope, then turn it off befo
 
 ### 5. Measure latency
 
-Collect input-event-to-next-frame samples in the page, not only wall-clock duration around a test runner command. Run at least five comparable bursts after warm-up and report median plus p95 when sample size permits.
+Collect input-event-to-next-frame samples in the page, not only wall-clock duration around a test runner command. Run at least ten comparable bursts after warm-up and report median plus p95.
 
 Treat frame timing as a user-perceived scheduling proxy, not a laboratory paint measurement. Record the final value and dropped/mismatched events beside timing results.
 
@@ -104,7 +105,7 @@ Make small, temporary experiments and rerun the same probe after each one. Typic
 5. replace controlled feedback with the framework's recommended integration seam;
 6. profile expensive siblings only if the form container still rerenders.
 
-Do not combine experiments: the goal is attribution, not an accidental fix.
+Do not combine experiments. Run every applicable experiment even when an earlier one already reduces the gap — input slowdowns often have more than one contributor. After the full isolation round, attribute the gap proportionally: "X contributed ~60% of the slowdown and Y the remaining ~40%." The goal is complete attribution, not the first plausible culprit.
 
 ### 7. Classify the result
 
@@ -140,6 +141,7 @@ Measurements:
 | Scenario | Final value | Field renders | Form/page renders | Median input→frame | p95 | Requests |
 | ...      | ...         | ...           | ...               | ...                | ... | ...      |
 
+Complexity gap: ...
 Cause: ...
 Evidence: ...
 Recommendation or change: ...
