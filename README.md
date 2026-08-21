@@ -20,8 +20,12 @@ npx skills add https://github.com/pablen/agent-skills/tree/main/skills/bitbucket
 - **commit-messages** — Draft Conventional Commit messages, respecting repo-local rules from `AGENTS.md` when present.
 - **frontend-code-quality-setup** — Audit and apply a standard code-quality baseline (VSCode, package manager, dependency policy, git hooks, lint-staged, `.gitignore`, agent files) to a frontend project.
 - **frontend-ready-check** — Check whether a frontend task is actually ready to implement by cross-referencing frontend usage, backend/service support, and related tracker work.
+- **implement-ticket** — Prepare a handoff prompt for a Jira ticket, or implement it directly, using the same preflight checks.
+- **input-perf-audit** — Run an explicitly-requested web form input performance audit: typing bursts, render scope, and input-to-frame latency.
 - **jira** — List, search, inspect, create, comment on, and transition Jira issues via the REST API.
+- **skills-sync** — Audit and repair how multiple local AI agents (Claude Code, Codex, Gemini CLI, Pi) discover skills, keeping one git-versioned repo as the single source of truth.
 - **structural-audit** — Adversarially audit an agent-heavy codebase for vacuous tests, oversized/duplicated files, misapplied abstractions, and unjustified divergence from a reference architecture.
+- **youtube-audio-library** — Search YouTube, download and convert audio, and organize a personal music library against a local catalog.
 
 ## Credentials
 
