@@ -15,10 +15,11 @@ project without understanding why the reference did it that way.
 
 The point is not to catch bugs (that's `code-review`/`security-review`) and
 it is explicitly **not** to chase naming, formatting, or folder-layout taste —
-those are implementation details with no product impact and are out of scope
-here. The point is to surface the handful of things a human reviewer would
-never stumble onto by accident, so they can be reviewed and fixed
-deliberately instead of discovered months later.
+those are implementation details with no product impact, so they stay out of
+the core audit and are only surfaced as an optional extra (last workflow
+step) when the user asks. The point is to surface the handful of things a
+human reviewer would never stumble onto by accident, so they can be reviewed
+and fixed deliberately instead of discovered months later.
 
 ## Core Rules
 
@@ -37,8 +38,9 @@ deliberately instead of discovered months later.
   attention: (1) tests that create false confidence, (2) correctness of
   business-critical logic (money, auth, permissions, external side effects),
   (3) duplication and misapplied structure, (4) everything else. Naming,
-  formatting, and file/folder bikeshedding are explicitly not this skill's
-  job — do not report them even if noticed in passing.
+  formatting, and file/folder bikeshedding are not part of this ranking —
+  keep them out of the main findings; they are only offered as an optional
+  extra at report time (last workflow step).
 - **Sample deliberately, not randomly or exhaustively.** A full-repo line
   read defeats the purpose (nobody will read that report either). Use risk
   signals — see "Building the target list" — to choose what to look at.
@@ -113,6 +115,18 @@ Do not sample randomly. Rank candidates using signals such as:
 - **Screen-type cohorts**: pages that solve the same generic UI problem
   (entity list/table, create/edit drawer, detail page) — the set to compare
   in the cross-page consistency pass, not just individual files.
+
+- **Tool-assisted evidence (use to verify a signal, never to generate the
+  report)**: when the repo already has these configured — or you can run
+  them on the fly with `npx` — prefer their output as evidence for the
+  matching signal: `knip` for dead weight (unused files, exports,
+  dependencies), `dependency-cruiser` for import cycles and orphan files,
+  and `jscpd --summary` for duplication hotspots. Their output is exhaustive
+  and deterministic, but it is evidence, not the finding list — still sample
+  deliberately and re-read the actual lines before reporting or fixing.
+  `jscpd` is the noisiest on CRUD-heavy frontends (intentional co-located
+  duplication reads as clones); treat it as a suspicion generator, not a
+  verdict.
 
 State the target list and the reasoning before diving in, so the human can
 redirect ("skip that area, I already know it's rough" / "focus here
@@ -252,11 +266,35 @@ reference:
   with no visible reason and no note explaining why. Worth asking about,
   not assuming either project is wrong.
 
-### 8. Report
+### 8. Optional extra: naming, formatting, and folder taste
+
+Not part of the core audit — do not run it by default and do not fold it
+into the main findings. It answers the separate question a user sometimes
+asks after the report (naming, formatting, folder layout). Offer it at
+report time; run it only if the user accepts.
+
+When accepted, keep it in its own clearly-labelled section so it can never
+be read as part of the main findings:
+
+- **Naming** — the same concept named differently across siblings (e.g. a
+  supplier helper missing the `supplier` prefix its manufacturer/laboratory
+  counterparts have), and booleans that read as bare nouns (`initialLoading`)
+  or subject-first (`draftIsValid`) instead of `is`/`has`/`can`. Leave
+  HTML/MUI passthrough and option/capability props (`disabled`, `loading`,
+  `open`, `clearable`, `compact`) untouched.
+- **Formatting** — only what the repo's own formatter/linter does not already
+  enforce (run `format:check`/`lint`, don't eyeball). Comment-language or
+  docblock inconsistency is the usual real signal.
+- **Folder taste** — page-local logic is fine co-located; flag only genuine
+  duplication that belongs in `utils/` or a shared module, and whether a
+  shared component is generic vs domain-specific. Do not reorganize by file
+  type.
+
+### 9. Report
 
 Use the format below. Do not apply any change yet.
 
-### 9. Apply (only on request)
+### 10. Apply (only on request)
 
 If the user wants fixes applied, go one finding or one category at a time:
 apply, run the narrowest relevant check/test, confirm before moving to the
@@ -305,9 +343,26 @@ Left unexamined: <areas deliberately out of scope this run, if any>
 ### Reference-Architecture Divergence (if applicable)
 - <pattern> — cargo-cult / unexplained / justified — <reasoning>
 
-### Out of scope by design
-Naming, formatting, and folder taste were not evaluated — see this skill's
-rationale.
+### Optional extra (not run by default)
+Naming, formatting, and folder taste were left out of this core audit. Offer
+to run them as a separate low-priority pass, and add a short Naming /
+Formatting / Folder taste list here only if the user accepts.
+
+### Tool-assisted exhaustive pass (optional, offered at report time)
+
+Separate from the naming/formatting extra: these tools quantify core audit
+categories (dead weight, architecture, duplication), so they get their own
+menu item. Offer to run any of them on demand:
+
+- `knip` — unused files, exports, and dependencies.
+- `dependency-cruiser` — import cycles and orphan files.
+- `jscpd --summary` — duplication hotspots.
+
+When the repo has them installed, use its own script; otherwise run them with
+`npx` (e.g. `npx knip`, `npx dependency-cruiser src`, `npx jscpd src
+--summary`). Present the raw output as evidence for the user to judge, and do
+not auto-fix. jscpd needs explicit thresholds and human judgment because much
+of its output is intentional co-location.
 
 Apply any of these now? Specify which, or "all" to go one at a time.
 ```
