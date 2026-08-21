@@ -1,0 +1,6 @@
+interface:
+  display_name: "Performance Impact Audit"
+  short_description: "Decide if a proposed perf fix is worth implementing before writing it"
+  default_prompt: "Use $perf-impact-audit to check whether this proposed performance fix actually has a measurable effect before implementing it."
+policy:
+  allow_implicit_invocation: false

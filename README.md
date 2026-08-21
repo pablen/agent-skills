@@ -23,6 +23,7 @@ npx skills add https://github.com/pablen/agent-skills/tree/main/skills/bitbucket
 - **implement-ticket** — Prepare a handoff prompt for a Jira ticket, or implement it directly, using the same preflight checks.
 - **input-perf-audit** — Run an explicitly-requested web form input performance audit: typing bursts, render scope, and input-to-frame latency.
 - **jira** — List, search, inspect, create, comment on, and transition Jira issues via the REST API.
+- **perf-impact-audit** — Decide whether a proposed React/frontend performance fix is worth implementing by prototyping it in an isolated worktree and measuring its real effect before it lands on the branch.
 - **skills-sync** — Audit and repair how multiple local AI agents (Claude Code, Codex, Gemini CLI, Pi) discover skills, keeping one git-versioned repo as the single source of truth.
 - **structural-audit** — Adversarially audit an agent-heavy codebase for vacuous tests, oversized/duplicated files, misapplied abstractions, and unjustified divergence from a reference architecture.
 - **youtube-audio-library** — Search YouTube, download and convert audio, and organize a personal music library against a local catalog.
