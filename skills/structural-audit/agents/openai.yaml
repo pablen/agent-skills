@@ -1,0 +1,6 @@
+interface:
+  display_name: "Structural Audit"
+  short_description: "Adversarial audit for vacuous tests, bloat, and drift"
+  default_prompt: "Use $structural-audit to adversarially audit this codebase for vacuous tests, oversized/duplicated files, and unjustified divergence from our reference architecture."
+policy:
+  allow_implicit_invocation: false

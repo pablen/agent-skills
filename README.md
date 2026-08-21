@@ -21,6 +21,7 @@ npx skills add https://github.com/pablen/agent-skills/tree/main/skills/bitbucket
 - **frontend-code-quality-setup** — Audit and apply a standard code-quality baseline (VSCode, package manager, dependency policy, git hooks, lint-staged, `.gitignore`, agent files) to a frontend project.
 - **frontend-ready-check** — Check whether a frontend task is actually ready to implement by cross-referencing frontend usage, backend/service support, and related tracker work.
 - **jira** — List, search, inspect, create, comment on, and transition Jira issues via the REST API.
+- **structural-audit** — Adversarially audit an agent-heavy codebase for vacuous tests, oversized/duplicated files, misapplied abstractions, and unjustified divergence from a reference architecture.
 
 ## Credentials
 
