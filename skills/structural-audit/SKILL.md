@@ -62,14 +62,14 @@ and fixed deliberately instead of discovered months later.
   will change code, re-read the actual lines it's about yourself. This costs
   little and has already caught two false findings that would otherwise have
   produced a wrong or unnecessary fix.
-- **When running mutation checks in parallel across multiple agents, scope
-  each agent's targets to disjoint files.** Two agents mutation-testing the
-  same shared file at the same time can observe each other's in-flight
-  mutation and misdiagnose it as a pre-existing bug. If you still see this
-  happen, treat an unexplained mutation as a coordination artifact first —
-  check `git diff`/`git status` against what you yourself changed before
-  concluding it's a real finding, then revert it and let the owning agent's
-  own check run cleanly.
+- **When running mutation checks (manual or scoped Stryker runs) in parallel
+  across multiple agents, scope each agent's targets to disjoint files.**
+  Two agents mutation-testing the same shared file at the same time can
+  observe each other's in-flight mutation and misdiagnose it as a
+  pre-existing bug. If you still see this happen, treat an unexplained
+  mutation as a coordination artifact first — check `git diff`/`git status`
+  against what you yourself changed before concluding it's a real finding,
+  then revert it and let the owning agent's own check run cleanly.
 
 ## Workflow
 
@@ -112,6 +112,12 @@ Do not sample randomly. Rank candidates using signals such as:
   target on its own, no mutation check needed to justify picking it (the
   absence of any test is the finding); reserve the mutation check in step 3
   for files that *do* have tests but you suspect are vacuous.
+- **Complexity × coverage risk (CRAP)**: when the repo can produce it (see
+  [references/crap-and-mutation.md](references/crap-and-mutation.md)), files
+  with high cyclomatic complexity and low coverage are priority targets.
+  CRAP filters "complex and untested", not "complex and badly tested" —
+  coverage measures execution, not quality, so a high CRAP score justifies
+  reading the file, never trusting its tests.
 - **Screen-type cohorts**: pages that solve the same generic UI problem
   (entity list/table, create/edit drawer, detail page) — the set to compare
   in the cross-page consistency pass, not just individual files.
@@ -158,6 +164,16 @@ For every test file touching a target from step 2:
    break the logic the test claims to cover, rerun just that test, confirm
    it goes red, then revert. If it stays green, that's a confirmed finding —
    not a suspicion.
+
+When a dedicated mutation tool is available (StrykerJS is the standard for
+TS/JS), prefer it over the manual check on these targets: run it scoped to
+one file at a time (`stryker run --mutate <file>`, or the repo's own
+script) and triage the survivors. The score is not a gate — timeouts count
+as detected and style/hover/markup mutants are expected noise in UI code;
+the survivor list is the finding (which asserts are missing). If Stryker
+finds no related tests for the file, that itself is the finding — nothing
+imports it; don't force a run with `related: false`. See
+[references/crap-and-mutation.md](references/crap-and-mutation.md).
 
 Do not extend this pass to the entire test suite indiscriminately — apply it
 to risk-ranked targets, and note explicitly which areas were left
@@ -351,12 +367,17 @@ Formatting / Folder taste list here only if the user accepts.
 ### Tool-assisted exhaustive pass (optional, offered at report time)
 
 Separate from the naming/formatting extra: these tools quantify core audit
-categories (dead weight, architecture, duplication), so they get their own
-menu item. Offer to run any of them on demand:
+categories (dead weight, architecture, duplication, test integrity,
+complexity × coverage risk), so they get their own menu item. Offer to run
+any of them on demand:
 
 - `knip` — unused files, exports, and dependencies.
 - `dependency-cruiser` — import cycles and orphan files.
 - `jscpd --summary` — duplication hotspots.
+- `stryker` scoped per file — which mutants survive (vacuous-test detection);
+  see [references/crap-and-mutation.md](references/crap-and-mutation.md).
+- CRAP (complexity × coverage) — target-list evidence for step 2; recipe in
+  [references/crap-and-mutation.md](references/crap-and-mutation.md).
 
 When the repo has them installed, use its own script; otherwise run them with
 `npx` (e.g. `npx knip`, `npx dependency-cruiser src`, `npx jscpd src
