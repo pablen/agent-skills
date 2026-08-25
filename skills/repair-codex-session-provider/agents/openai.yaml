@@ -1,0 +1,3 @@
+interface:
+  display_name: "Repair Codex Session Provider"
+  short_description: "Repair sessions with a missing model provider"
