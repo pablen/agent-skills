@@ -76,6 +76,30 @@ Behavior:
 - Returns compact key-value output for direct summarization
 - No extra reads unless the request explicitly asks for comments, history, or transitions
 
+### "Stories de la épica <KEY>"
+
+Run:
+
+`scripts/jira-epic-issues.sh <EPIC_KEY> [--description] [--links]`
+
+Behavior:
+- Lists direct child issues using `parent = <EPIC_KEY>`.
+- Without options, returns compact TSV with ownership, classification, and status fields.
+- `--description` renders each child description; `--links` adds normalized issue relationships.
+- This is read-only. It does not infer a repository from labels or components.
+- The command stops rather than silently omitting results when an epic has more than 100 children.
+
+### "Auditar épica <KEY>"
+
+Run:
+
+`scripts/jira-epic-audit.sh <EPIC_KEY>`
+
+Behavior:
+- Produces a read-only Markdown audit of direct child issue ownership, components, labels, unassigned issues, unclassified issues, and links.
+- “Without components or labels” is an objective metadata check, not an inference about technical ownership.
+- Use it for backlog redistribution or dependency review. It does not change Jira.
+
 ### "Transitions de <KEY>"
 
 Run exactly:
