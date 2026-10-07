@@ -1,0 +1,3 @@
+interface:
+  display_name: "Session Path"
+  short_description: "Locate a coding-agent session transcript"
