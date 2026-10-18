@@ -42,9 +42,17 @@ the most interesting ones.
 ## Mutation testing: automating the step-3 mutation check
 
 The manual mutation check in `references/test-integrity.md` is the
-small-scale version of what StrykerJS does exhaustively. Prefer Stryker when
-it is runnable in the audited repo (installed, or `npx`-able), scoped to one
-risk-ranked file at a time.
+small-scale version of what StrykerJS does exhaustively. Prefer Stryker for
+suspect tests on logic files when it is runnable in the audited repo
+(installed, or `npx`-able), scoped to the lines those tests cover
+(`--mutate <file>:<from>-<to>`).
+
+Cost decides where to use it. Each mutant reruns every test that covers it;
+on a page or component that means mounting the whole screen in jsdom, so a
+single page-sized file can take 10-20 minutes and most of its mutants are
+markup. Logic files run in a minute or two and nearly every mutant matters.
+If the repo's config supports it, turn on incremental mode so before/after
+runs reuse unchanged results.
 
 Operational notes that matter when reading its output:
 
@@ -58,6 +66,8 @@ Operational notes that matter when reading its output:
   run with `related: false` just to get a number.
 - **Equivalent mutants** (mutations that do not change behavior) cannot be
   killed; handle them with ignore annotations rather than chasing them.
-- **Parallel runs:** when multiple agents run scoped Stryker runs, each
-  target must be a disjoint file (see the parallel mutation rule in
-  SKILL.md).
+- **Run one at a time.** Parallel runs compete for CPU and memory and all
+  of them slow down; in one audit, three concurrent runs on a 12-core
+  machine kept the load near 13 and each took several times longer. If
+  several agents must run Stryker anyway, each target must be a disjoint
+  file (see the parallel mutation rule in SKILL.md).

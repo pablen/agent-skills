@@ -62,6 +62,13 @@ and fixed deliberately instead of discovered months later.
   will change code, re-read the actual lines it's about yourself. This costs
   little and has already caught two false findings that would otherwise have
   produced a wrong or unnecessary fix.
+- **Every sub-agent finding lands somewhere.** When sub-agents audit slices,
+  consolidation is where findings get lost: a finding a sub-agent reported
+  in passing (a missing API limit, say) never made the report. Each one goes
+  into the report or the tracker, or is dropped with a stated reason. The
+  same holds for "Left unexamined": record those areas in the tracker as
+  open items, so the next audit starts from them instead of rediscovering
+  them.
 - **When running mutation checks (manual or scoped Stryker runs) in parallel
   across multiple agents, scope each agent's targets to disjoint files.**
   Two agents mutation-testing the same shared file at the same time can
@@ -122,17 +129,25 @@ Do not sample randomly. Rank candidates using signals such as:
   (entity list/table, create/edit drawer, detail page) — the set to compare
   in the cross-page consistency pass, not just individual files.
 
-- **Tool-assisted evidence (use to verify a signal, never to generate the
-  report)**: when the repo already has these configured — or you can run
-  them on the fly with `npx` — prefer their output as evidence for the
-  matching signal: `knip` for dead weight (unused files, exports,
-  dependencies), `dependency-cruiser` for import cycles and orphan files,
-  and `jscpd --summary` for duplication hotspots. Their output is exhaustive
-  and deterministic, but it is evidence, not the finding list — still sample
-  deliberately and re-read the actual lines before reporting or fixing.
-  `jscpd` is the noisiest on CRUD-heavy frontends (intentional co-located
-  duplication reads as clones); treat it as a suspicion generator, not a
+**Baseline signals: run every audit.** These are cheap (seconds to a couple
+of minutes) and deterministic, so they are part of building the target list,
+not an optional extra. Use the repo's own script when it has one, otherwise
+`npx`:
+
+- **Per-branch coverage** of the whole `src` (include files no test imports).
+  It is the only signal that surfaces a business-critical file with no tests
+  at all, such as a login page at 0%; reading tests can't find a test that
+  doesn't exist.
+- **`knip`** for dead weight (unused files, exports, dependencies).
+- **`dependency-cruiser`** for import cycles and orphan files.
+- **`jscpd --summary`** with explicit thresholds for duplication hotspots.
+  It is the noisiest on CRUD-heavy frontends (intentional co-located
+  duplication reads as clones), so treat it as a suspicion generator, not a
   verdict.
+
+Their output is evidence for the matching signal, not the finding list:
+still sample deliberately and re-read the actual lines before reporting or
+fixing. Report which baseline signals ran; if one can't run, say so.
 
 State the target list and the reasoning before diving in, so the human can
 redirect ("skip that area, I already know it's rough" / "focus here
@@ -165,14 +180,22 @@ For every test file touching a target from step 2:
    it goes red, then revert. If it stays green, that's a confirmed finding —
    not a suspicion.
 
+The mutation check is triggered by the classification, not run by default:
+no suspect or vacuous test on a target means no mutation run there. Say so
+in the report ("N tests read, 0 suspect, no mutation check needed"), since a
+reading-only verdict is weaker evidence than a red mutant.
+
 When a dedicated mutation tool is available (StrykerJS is the standard for
-TS/JS), prefer it over the manual check on these targets: run it scoped to
-one file at a time (`stryker run --mutate <file>`, or the repo's own
-script) and triage the survivors. The score is not a gate — timeouts count
-as detected and style/hover/markup mutants are expected noise in UI code;
-the survivor list is the finding (which asserts are missing). If Stryker
-finds no related tests for the file, that itself is the finding — nothing
-imports it; don't force a run with `related: false`. See
+TS/JS), prefer it over the manual check for suspect tests on **logic files**
+(models, utils, pure helpers): scope it to the lines the suspect tests cover
+(`stryker run --mutate <file>:<from>-<to>`), one run at a time, and triage
+the survivors. On pages and components a run can take 10-20 minutes and is
+mostly markup noise, so use the manual check there and leave a full Stryker
+run to the optional exhaustive pass. The score is not a gate — timeouts
+count as detected and style/hover/markup mutants are expected noise; the
+survivor list is the finding (which asserts are missing). If Stryker finds
+no related tests for the file, that itself is the finding — nothing imports
+it; don't force a run with `related: false`. See
 [references/crap-and-mutation.md](references/crap-and-mutation.md).
 
 Do not extend this pass to the entire test suite indiscriminately — apply it
@@ -340,8 +363,9 @@ leaves the actual duplication in place for the next drift.
 ## Structural Audit
 
 Scope: <what was covered> | Reference repo: <path or "none">
+Baseline signals: <coverage %, knip, dependency-cruiser, jscpd — results, or why one didn't run>
 Target list rationale: <churn / keywords / size / duplication signals used>
-Left unexamined: <areas deliberately out of scope this run, if any>
+Left unexamined: <areas deliberately out of scope this run, if any — also recorded in the tracker>
 
 ### Test Integrity (priority 1)
 | File | Test | Classification | Mutation check | Evidence |
@@ -364,28 +388,22 @@ Naming, formatting, and folder taste were left out of this core audit. Offer
 to run them as a separate low-priority pass, and add a short Naming /
 Formatting / Folder taste list here only if the user accepts.
 
-### Tool-assisted exhaustive pass (optional, offered at report time)
+### Exhaustive pass (optional, offered at report time)
 
-Separate from the naming/formatting extra: these tools quantify core audit
-categories (dead weight, architecture, duplication, test integrity,
-complexity × coverage risk), so they get their own menu item. Offer to run
-any of them on demand:
+The baseline signals already ran in step 2. This menu is only for the
+expensive runs the core audit skips on purpose:
 
-- `knip` — unused files, exports, and dependencies.
-- `dependency-cruiser` — import cycles and orphan files.
-- `jscpd --summary` — duplication hotspots.
-- `stryker` scoped per file — which mutants survive (vacuous-test detection);
-  see [references/crap-and-mutation.md](references/crap-and-mutation.md).
-- CRAP (complexity × coverage) — target-list evidence for step 2; recipe in
+- `stryker` over pages and components, or a whole risk-ranked folder —
+  which mutants survive beyond the suspect tests already checked. Slow
+  (10-20 minutes per page-sized file); run one at a time, in the background.
+- CRAP (complexity × coverage) per function — finer prioritization than
+  per-file coverage; recipe in
   [references/crap-and-mutation.md](references/crap-and-mutation.md).
 
-When the repo has them installed, use its own script; otherwise run them with
-`npx` (e.g. `npx knip`, `npx dependency-cruiser src`, `npx jscpd src
---summary`). Present the raw output as evidence for the user to judge, and do
-not auto-fix. jscpd needs explicit thresholds and human judgment because much
-of its output is intentional co-location.
+Present the raw output as evidence for the user to judge, and do not
+auto-fix.
 
-Apply any of these now? Specify which, or "all" to go one at a time.
+Run any of these now? Specify which.
 ```
 
 Lead with Test Integrity even when it has zero findings — say so explicitly
