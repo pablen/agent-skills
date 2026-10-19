@@ -52,7 +52,10 @@ Done when every screen in scope has a type and a flow list.
 Reuse the project's E2E setup when it has one (Playwright with mocked routes is
 the usual case): its fixtures, its fake session, its free-port dev server.
 Otherwise start a dedicated dev server pointed at a mocked API base and seed a
-fake session. Add the catch-all route before anything else.
+fake session. Add the catch-all route before anything else, and match it on
+the URL path (`(url) => url.pathname.startsWith('/api/')`) rather than a glob:
+the dev server also serves source modules such as `/src/api/index.ts`, and a
+`**/api/**` glob catches them and leaves the page blank.
 
 Done when the app loads in scope screens with no request leaving the mock.
 
@@ -86,9 +89,11 @@ screenshot.
 
 ### 6. Confirm
 
-Re-run each candidate once on its own to rule out a flake, and re-check the
-fixture behind it against the API's real output. Drop the candidates that turn
-out to be fixture artifacts, and say so in the report.
+Re-run each candidate once on its own to rule out a flake, re-check the
+fixture behind it against the API's real output, and re-check that the input
+that triggered it is one a person can produce (timing included). Drop the
+candidates that turn out to be fixture or timing artifacts, and say so in the
+report.
 
 Done when every remaining candidate reproduced twice on a fixture that matches
 the API.
@@ -115,7 +120,7 @@ Skipped: <screens or tour items not run, with reason>
 | 1 | ...    | ...   | ...      | ...    | ...    | screenshot path |
 
 ### Dropped
-- <candidate> — fixture artifact / flake — <why>
+- <candidate> — fixture artifact / timing artifact / flake — <why>
 
 ### Checks worth keeping (proposal)
 - <invariant> — <screen(s)> — <why it is stable>

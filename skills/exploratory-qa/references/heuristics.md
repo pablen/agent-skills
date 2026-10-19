@@ -42,7 +42,10 @@ reason in the report.
 ### Create or edit form
 
 - Save with no changes.
-- Double-click save.
+- Double-click save at human speed: two separate clicks about 100 ms apart.
+  Playwright's `dblclick` and two `fireEvent` calls in one tick fire both
+  clicks within a millisecond, faster than any person; a duplicate request
+  counts as a bug only when it reproduces at human speed.
 - Cancel with unsaved changes, then cancel again without changes.
 - Each field at its limits (see "Data that breaks things").
 - A server rejection for each field the API validates.
