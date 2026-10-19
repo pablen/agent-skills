@@ -30,6 +30,17 @@ and fixed deliberately instead of discovered months later.
   fix an issue — always present findings and get confirmation before
   changing anything. Fix confirmed findings one at a time, re-verifying after
   each.
+- **Signals prioritize reading; they are not findings.** Coverage, knip,
+  linters, schema diffs and every other automated signal tell you where to
+  read. A finding exists only after you read the code and confirm it.
+- **Prevention is proposed, never installed.** After a finding is fixed, an
+  automated prevention (a lint rule, a dependency-cruiser rule, a CI check)
+  may be proposed when it expresses a stable invariant, detects it
+  precisely, has a documented alternative and expects few exceptions.
+  Record it separately from the finding; a fix without one is still a
+  complete fix. Never install, enable or modify rules during the audit
+  without explicit approval: an approved proposal is applied and verified
+  as a later task.
 - **Be adversarial, not diplomatic.** Assume the code passing lint/build/CI
   proves nothing about the categories this audit cares about. Actively try
   to break the claims a green test suite makes, rather than taking green as
@@ -65,10 +76,10 @@ and fixed deliberately instead of discovered months later.
 - **Every sub-agent finding lands somewhere.** When sub-agents audit slices,
   consolidation is where findings get lost: a finding a sub-agent reported
   in passing (a missing API limit, say) never made the report. Each one goes
-  into the report or the tracker, or is dropped with a stated reason. The
-  same holds for "Left unexamined": record those areas in the tracker as
-  open items, so the next audit starts from them instead of rediscovering
-  them.
+  into the report and the findings ledger, or is dropped with a stated
+  reason. The same holds for "Left unexamined": record those areas in the
+  ledger's coverage map, so the next audit starts from them instead of
+  rediscovering them.
 - **When running mutation checks (manual or scoped Stryker runs) in parallel
   across multiple agents, scope each agent's targets to disjoint files.**
   Two agents mutation-testing the same shared file at the same time can
@@ -91,9 +102,11 @@ Ask (or infer from context) before starting:
   against? Check `AGENTS.md`/`CLAUDE.md` first — many repos already document
   one (e.g. "follow the patterns validated in project X"). Don't ask if it's
   already documented.
-- Is this the first audit or a repeat? If prior audit notes exist (e.g. in
-  `.notes/` or wherever this repo keeps them), read them first so the report
-  tracks delta instead of re-litigating accepted findings.
+- Is there a findings ledger? Look for it (default `docs/audit/findings.md`,
+  or wherever the repo keeps audit notes) and note where it is, but read it
+  only after building your own target list in step 2. See
+  [references/findings-ledger.md](references/findings-ledger.md) for when and
+  how to use it, and for the format to create one on a first audit.
 
 ### 2. Build the target list
 
@@ -148,6 +161,18 @@ not an optional extra. Use the repo's own script when it has one, otherwise
 Their output is evidence for the matching signal, not the finding list:
 still sample deliberately and re-read the actual lines before reporting or
 fixing. Report which baseline signals ran; if one can't run, say so.
+
+**Optional signals by repo type.** When the repo has async-heavy UI tests, a
+separate API repo, date-only business values or a TypeScript codebase worth
+probing for strictness, read
+[references/optional-signals.md](references/optional-signals.md) for test
+async hygiene, a per-endpoint contract registry, a timezone matrix with
+property tests, and a type strictness probe, each with its limits.
+
+Once the target list is built, read the findings ledger: dedupe against it,
+leave `accepted`/`wontfix` entries alone unless their revisit condition is
+met, add never-examined areas from its coverage map, and plan a quick
+re-check of `fixed` entries on risk-ranked targets.
 
 State the target list and the reasoning before diving in, so the human can
 redirect ("skip that area, I already know it's rough" / "focus here
@@ -331,7 +356,10 @@ be read as part of the main findings:
 
 ### 9. Report
 
-Use the format below. Do not apply any change yet.
+Use the format below. Do not apply any change yet. Then update the findings
+ledger: new entries with fresh IDs, new evidence on matched entries, reopened
+`fixed` entries that regressed, and the coverage map for this run. Mark each
+finding in the report as new or as an existing ledger ID.
 
 ### 10. Apply (only on request)
 
@@ -339,6 +367,15 @@ If the user wants fixes applied, go one finding or one category at a time:
 apply, run the narrowest relevant check/test, confirm before moving to the
 next. Never batch-apply the whole report — a second unreviewed pass over
 unreviewed findings recreates the exact problem this skill exists to catch.
+
+After closing a finding, consider whether it earns a prevention proposal
+(see the core rule): a convention rule needs at least two analogous uses or
+an explicit architecture decision behind it, and must state its boundary,
+its intentional exceptions and the alternative it points to. Syntax alone
+rarely carries the meaning: banning `toISOString()` is wrong because it is
+correct for instants; the defect is using it on date-only domain values.
+Add the proposal to the report's Prevention proposals table and leave
+ESLint, dependency-cruiser and CI untouched until the user approves it.
 
 When fixes span multiple findings grouped into phases (e.g. a written fix
 plan), run the full check/unit/e2e suite once before starting a phase and
@@ -365,7 +402,8 @@ leaves the actual duplication in place for the next drift.
 Scope: <what was covered> | Reference repo: <path or "none">
 Baseline signals: <coverage %, knip, dependency-cruiser, jscpd — results, or why one didn't run>
 Target list rationale: <churn / keywords / size / duplication signals used>
-Left unexamined: <areas deliberately out of scope this run, if any — also recorded in the tracker>
+Ledger: <path> — <N new, N matched existing IDs, N reopened, N skipped as accepted/wontfix>
+Left unexamined: <areas deliberately out of scope this run, if any — also in the ledger's coverage map>
 
 ### Test Integrity (priority 1)
 | File | Test | Classification | Mutation check | Evidence |
@@ -382,6 +420,10 @@ Left unexamined: <areas deliberately out of scope this run, if any — also reco
 
 ### Reference-Architecture Divergence (if applicable)
 - <pattern> — cargo-cult / unexplained / justified — <reasoning>
+
+### Prevention proposals (only for fixed findings; nothing installed)
+| Finding | Invariant | Detector | Alternative | Expected exceptions | Status |
+| ...     | ...       | ...      | ...         | ...                 | proposed / approved / applied |
 
 ### Optional extra (not run by default)
 Naming, formatting, and folder taste were left out of this core audit. Offer
