@@ -18,6 +18,7 @@ npx skills add https://github.com/pablen/agent-skills/tree/main/skills/bitbucket
 
 - **bitbucket** — List, inspect, comment on, approve, or merge Bitbucket pull requests via the REST API (Repository Access Token auth).
 - **commit-messages** — Draft Conventional Commit messages, respecting repo-local rules from `AGENTS.md` when present.
+- **exploratory-qa** — Drive a web frontend's screens in a real browser with API-shaped mock data and check concrete oracles (rendered values, sent payloads, no crashes) to find bugs that reading code misses.
 - **frontend-code-quality-setup** — Audit and apply a standard code-quality baseline (VSCode, package manager, dependency policy, git hooks, lint-staged, `.gitignore`, agent files) to a frontend project.
 - **frontend-ready-check** — Check whether a frontend task is actually ready to implement by cross-referencing frontend usage, backend/service support, and related tracker work.
 - **implement-ticket** — Prepare a handoff prompt for a Jira ticket, or implement it directly, using the same preflight checks.

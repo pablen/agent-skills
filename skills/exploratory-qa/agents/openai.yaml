@@ -1,0 +1,6 @@
+interface:
+  display_name: "Exploratory QA"
+  short_description: "Drive screens with API-shaped data and check oracles"
+  default_prompt: "Use $exploratory-qa to run an exploratory QA pass on the screens touched by this change."
+policy:
+  allow_implicit_invocation: true
