@@ -193,8 +193,10 @@ For every test file touching a target from step 2:
      under test.
    - **Suspect** — asserts on something trivially true (mock was called,
      component rendered without crashing, a snapshot with no reasoning
-     about what changed it), or duplicates another test with no added
-     value.
+     about what changed it), duplicates another test with no added value,
+     or feeds the logic a fixture whose format differs from the API's real
+     output in the field it checks (a `T12:00Z` where the API stores
+     midnight UTC hides a timezone bug).
    - **Vacuous** — cannot fail given any plausible implementation change;
      asserts on constants, doesn't await async work it should, mocks away
      the exact thing it claims to verify.
@@ -441,6 +443,10 @@ expensive runs the core audit skips on purpose:
 - CRAP (complexity × coverage) per function — finer prioritization than
   per-file coverage; recipe in
   [references/crap-and-mutation.md](references/crap-and-mutation.md).
+- An exploratory QA pass (`exploratory-qa` skill) on the screens whose
+  coverage map depth lacks `exploratory QA`. Reading code misses visible
+  bugs, such as a date rendered one day off, that driving the screen with
+  API-shaped data finds quickly.
 
 Present the raw output as evidence for the user to judge, and do not
 auto-fix.

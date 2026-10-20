@@ -28,7 +28,7 @@ npx skills add https://github.com/pablen/agent-skills/tree/main/skills/bitbucket
 - **repair-codex-session-provider** — Repair saved Codex sessions whose configured model provider is no longer available, with backups and index validation.
 - **session-path** — Resolve the local transcript path for a Codex or Claude Code session, exactly from a session ID or inferred from the working directory.
 - **skills-sync** — Audit and repair how multiple local AI agents (Claude Code, Codex, Gemini CLI, Pi) discover skills, keeping one git-versioned repo as the single source of truth.
-- **structural-audit** — Adversarially audit an agent-heavy codebase for vacuous tests, oversized/duplicated files, misapplied abstractions, and unjustified divergence from a reference architecture.
+- **structural-audit** — Adversarially audit an agent-heavy codebase for vacuous tests, oversized/duplicated files, misapplied abstractions, and unjustified divergence from a reference architecture, recording findings in a versioned ledger so later runs dedupe against them and respect past decisions.
 - **youtube-audio-library** — Search YouTube, download and convert audio, and organize a personal music library against a local catalog.
 
 ## Credentials

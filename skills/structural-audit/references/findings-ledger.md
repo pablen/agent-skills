@@ -14,6 +14,12 @@ worktree sessions, other machines and other agents see it. Default path
 then use that and say so. A gitignored notes folder works for a single
 machine but hides the ledger from worktrees.
 
+The ledger is **self-contained**: every entry stands on what is versioned,
+code lines, tests and commits. A run's working material (its tracker, a QA
+report, screenshots, handoff notes) is disposable once its findings are in
+the ledger, so an entry never depends on it: describe what a screenshot
+showed in the Finding or Evidence text instead of citing the file.
+
 ## When to read it
 
 1. Build your own target list first (steps 1-2), without the ledger, so prior
@@ -39,6 +45,11 @@ One table per category, matching the report sections. IDs are stable and
 never reused, with a prefix per category: `T` tests, `B` business logic, `S`
 structure, `C` cross-page, `R` reference architecture, `A` follow-ups in
 another repo.
+
+Write headers and text in the language of the repo's docs, keeping these
+fields and their order; a translated header names the same field (in a
+Spanish ledger, Fingerprint is _Huella_). The status values and depth values
+stay as written here, so runs can match them.
 
 | Field | Content |
 |---|---|
@@ -76,5 +87,13 @@ A table of what each run examined, so the next run can target the rest:
 | `src/pages/login/` | never | — | — |
 
 Depth is one of: `signals only`, `tests read`, `mutation on suspects`, `logic
-vs spec/API`, `cross-page compared`. Every "Left unexamined" area of a report
-appears here with its real depth, including `never`.
+vs spec/API`, `cross-page compared`, `exploratory QA` (screens driven in a
+browser by the `exploratory-qa` skill), combined with `+` when a run went
+deeper in several ways. Every "Left unexamined" area of a report appears here
+with its real depth, including `never`.
+
+## Other sources
+
+Findings from outside an audit run, such as an exploratory QA pass, go into
+the same ledger: same fingerprint dedupe, the category that fits (usually
+`B`), and an Origin naming the source, e.g. `QA 2026-10-18 @ 8b03872, #7`.
