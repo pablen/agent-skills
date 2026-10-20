@@ -18,6 +18,10 @@ on every UI change, and a full sweep before a release.
 - **Report, never fix.** The output is a list of candidate bugs with evidence.
   Don't touch application code. Temporary specs and scripts live outside the
   test suite and are deleted at the end, unless the user keeps them.
+- **Working material stays out of the repo.** Save the report and screenshots
+  outside the versioned tree (a scratch or local notes folder). They are
+  disposable once the confirmed candidates are recorded in the bug tracker or
+  the findings ledger.
 - **The mock is the oracle, so it must be honest.** Every value a fixture
   returns has the exact shape the real API returns: an API that stores a
   midnight-UTC timestamp returns that, not a convenient `T12:00Z` that hides
@@ -95,14 +99,23 @@ that triggered it is one a person can produce (timing included). Drop the
 candidates that turn out to be fixture or timing artifacts, and say so in the
 report.
 
+Then, when the project has a findings ledger, match each remaining candidate
+against it by fingerprint: a match is reported under its existing ID, and a
+match with an `accepted` or `wontfix` entry is dropped unless its revisit
+condition is met (say which).
+
 Done when every remaining candidate reproduced twice on a fixture that matches
-the API.
+the API, and every candidate is marked new or with its ledger ID.
 
 ### 7. Report
 
 Use the format below. Offer two follow-ups and wait for the user:
 
-- Record the confirmed candidates in the project's bug tracker or audit notes.
+- Record the confirmed candidates in the project's bug tracker, or in its
+  findings ledger when it has one (default `docs/audit/findings.md`, in the
+  format of the `structural-audit` skill's `references/findings-ledger.md`).
+  The ledger is self-contained: describe what each screenshot showed in the
+  entry, since the screenshots and this report are working material.
 - Keep a check as a permanent E2E test when it guards a stable invariant, such
   as "every rendered date matches its fixture in the business timezone". This
   is a proposal; adding it to the suite is a later task the user approves.
@@ -112,12 +125,12 @@ Use the format below. Offer two follow-ups and wait for the user:
 ```text
 ## Exploratory QA
 
-Mode: per change | sweep — Screens: <list> — Fixtures: <source: API schemas / captured responses>
+Mode: per change | sweep — Commit: <sha> — Screens: <list> — Fixtures: <source: API schemas / captured responses>
 Skipped: <screens or tour items not run, with reason>
 
 ### Confirmed candidates
-| # | Screen | Steps | Expected | Actual | Oracle | Evidence |
-| 1 | ...    | ...   | ...      | ...    | ...    | screenshot path |
+| # | Screen | Steps | Expected | Actual | Oracle | Evidence | Ledger |
+| 1 | ...    | ...   | ...      | ...    | ...    | screenshot path | new / B12 |
 
 ### Dropped
 - <candidate> — fixture artifact / timing artifact / flake — <why>
