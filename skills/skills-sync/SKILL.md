@@ -24,9 +24,8 @@ table has a "hub_alias" mode, how the Gemini discovery actually happened), see
         |  symlink, one per skill (most tools)
 ~/.claude/skills/<name>            <- per-tool dir, if the tool has one
 ~/.codex/skills/<name>
-~/.pi/agent/skills/<name>
-        (some tools, like Gemini CLI, read ~/.agents/skills directly as a
-        native alias tier and need no per-tool directory at all)
+        (some tools, like Gemini CLI and Pi, read ~/.agents/skills directly as
+        a native location and need no per-skill links at all)
 ```
 
 Two tiers, not one: the hub exists so a tool needing its own directory
@@ -73,7 +72,7 @@ calls.
    in the hub that isn't a repo skill (`hub_extra`), marking lockfile-tracked
    names as `protected` — never propose touching those.
 4. **Present a numbered plan.** Group the findings and show the user a
-   numbered table of what you'd do — e.g. `1) Link 'jira' into ~/.pi (missing)
+   numbered table of what you'd do — e.g. `1) Link 'jira' into ~/.codex (missing)
    2) Replace ~/.agents/skills/bitbucket (diverges from repo — see diff) 3)
    Leave 'caveman' alone (third-party)`. `symlink_ok` entries need no line at
    all — only report actionable items. Let the user drop/approve items before

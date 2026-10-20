@@ -26,7 +26,7 @@ falla y el usuario no tiene el path a mano.
 
 ### Dos niveles: hub + directorio por herramienta
 `~/.agents/skills` existe como capa intermedia para que una herramienta con
-directorio propio (`~/.claude/skills`, `~/.codex/skills`, `~/.pi/agent/skills`)
+directorio propio (`~/.claude/skills`, `~/.codex/skills`)
 tenga *un* lugar estable al que apuntar cada skill, sin saber nada de dónde
 vive el repo. Si el repo se muda, solo hace falta actualizar los symlinks del
 hub — los symlinks de cada herramienta hacia el hub no cambian.
@@ -35,14 +35,20 @@ hub — los symlinks de cada herramienta hacia el hub no cambian.
 Descubierto en la sesión real: no todas las herramientas resuelven skills
 igual.
 
-- **`per_skill_symlink`** (Claude Code, Codex, Pi): la herramienta tiene su
+- **`per_skill_symlink`** (Claude Code, Codex): la herramienta tiene su
   propio directorio de skills con una entrada nombrada por skill. Necesita un
   symlink por skill apuntando al hub.
-- **`hub_alias`** (Gemini CLI): la herramienta lee `~/.agents/skills/` como un
-  alias nativo de primera clase — literalmente documentado así en
-  `bundle/docs/cli/skills.md` del paquete instalado, con *más* precedencia que
-  su propia carpeta `~/.gemini/skills/`. No necesita ningún symlink por skill;
-  alcanza con que el hub esté sano. Confirmable con `gemini skills list --all`.
+- **`hub_alias`** (Gemini CLI, Pi): la herramienta lee `~/.agents/skills/` como
+  una ubicación nativa de primera clase. No necesita ningún symlink por skill;
+  alcanza con que el hub esté sano.
+  - Gemini CLI: documentado en `bundle/docs/cli/skills.md` del paquete
+    instalado, con *más* precedencia que su propia carpeta `~/.gemini/skills/`.
+    Confirmable con `gemini skills list --all`.
+  - Pi: `docs/skills.md` de `@earendil-works/pi-coding-agent` lista
+    `~/.agents/skills/` junto a su propia `~/.pi/agent/skills/`. Ante un mismo
+    nombre en dos ubicaciones avisa y se queda con la primera, así que un
+    symlink por skill en `~/.pi/agent/skills/` no suma nada y genera un aviso
+    por skill: esa carpeta queda para skills propias de Pi.
 
 ### El fallback de descubrimiento (cómo se encontró lo de Gemini, en los hechos)
 La primera hipótesis fue "Gemini no tiene mecanismo de skills" — conclusión
