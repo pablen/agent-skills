@@ -1,5 +1,6 @@
 """Shared helpers for the skills-sync scripts."""
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -35,6 +36,16 @@ def save_state(**updates) -> dict:
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     STATE_FILE.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
     return state
+
+
+def link_target(link: Path) -> Path:
+    """Absolute path a symlink points to, one hop only.
+
+    `Path.resolve()` follows the whole chain, so a tool link that skips the hub
+    and one that goes through it resolve to the same repo dir; comparing the
+    immediate target is what tells them apart.
+    """
+    return Path(os.path.normpath(link.parent / os.readlink(link)))
 
 
 def path_kind(path: Path) -> str:

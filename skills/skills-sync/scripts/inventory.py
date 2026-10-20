@@ -10,9 +10,10 @@ Usage: inventory.py --repo-root <path> [--hub-root ~/.agents/skills]
 """
 import argparse
 import json
+import os
 from pathlib import Path
 
-from common import emit, run
+from common import emit, link_target, run
 
 DEFAULT_HUB_ROOT = Path.home() / ".agents" / "skills"
 LOCKFILE = Path.home() / ".agents" / ".skill-lock.json"
@@ -40,8 +41,8 @@ def classify(entry_path: Path, expected_target: Path):
     if not entry_path.exists() and not entry_path.is_symlink():
         return {"status": "missing"}
     if entry_path.is_symlink():
-        target = entry_path.resolve()
-        if target == expected_target.resolve():
+        target = link_target(entry_path)
+        if target == Path(os.path.abspath(expected_target)):
             return {"status": "symlink_ok"}
         return {"status": "symlink_wrong", "points_to": str(target)}
     # real file or directory

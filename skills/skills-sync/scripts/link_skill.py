@@ -16,13 +16,14 @@ import os
 import shutil
 from pathlib import Path
 
-from common import emit
+from common import emit, link_target
 
 
 def link(target: Path, points_to: Path, replace: bool, relink: bool):
+    points_to = Path(os.path.abspath(points_to))
     if target.is_symlink():
-        current = target.resolve()
-        if current == points_to.resolve():
+        current = link_target(target)
+        if current == points_to:
             return {"status": "already_ok", "target": str(target)}
         if not relink:
             return {
@@ -45,7 +46,9 @@ def link(target: Path, points_to: Path, replace: bool, relink: bool):
             target.unlink()
 
     target.parent.mkdir(parents=True, exist_ok=True)
-    relative = os.path.relpath(points_to.resolve(), start=target.parent)
+    # Link to the path given, not its resolution: resolving a hub entry would
+    # write a link straight into the repo and bypass the hub.
+    relative = os.path.relpath(points_to, start=target.parent)
     target.symlink_to(relative)
     return {"status": "ok", "target": str(target), "points_to_relative": relative}
 
