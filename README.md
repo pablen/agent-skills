@@ -17,6 +17,7 @@ npx skills add https://github.com/pablen/agent-skills/tree/main/skills/bitbucket
 ## Skills
 
 - **bitbucket** — List, inspect, comment on, approve, or merge Bitbucket pull requests via the REST API (Repository Access Token auth).
+- **codex-delegate** — Turn a Claude Code session into an orchestrator whose child sessions hand the coding to Codex CLI in the background and report back, spreading token use across both subscriptions. Claude Code only.
 - **commit-messages** — Draft Conventional Commit messages, respecting repo-local rules from `AGENTS.md` when present.
 - **exploratory-qa** — Drive a web frontend's screens in a real browser with API-shaped mock data and check concrete oracles (rendered values, sent payloads, no crashes) to find bugs that reading code misses.
 - **frontend-code-quality-setup** — Audit and apply a standard code-quality baseline (VSCode, package manager, dependency policy, git hooks, lint-staged, `.gitignore`, agent files) to a frontend project.
