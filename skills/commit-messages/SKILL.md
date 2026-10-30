@@ -1,24 +1,21 @@
 ---
 name: commit-messages
-description: Use when the user asks to commit, wants commit message options, or needs help writing a Conventional Commit.
+description: Write Conventional Commit messages when the user asks to commit or needs help with a commit message.
 ---
 
-# Commit Messages
-
-Use this skill when proposing or creating git commits.
+# Commit messages
 
 ## Workflow
 
-1. Read staged changes or the intended change set before writing the message.
-2. Read repo-local rules from `AGENTS.md` if present.
-3. If the user did not give the exact commit message, propose 3 strong variants and stop for user selection.
-4. If the repo requires a Jira or issue suffix, append the key in brackets:
+1. Read the staged diff or intended changes and the repo's `AGENTS.md`.
+2. If the repo requires a Jira or issue suffix, append the key in brackets:
    `[HIBA-58]`.
-5. When the repo requires `AI_MODE=1` for commit / push / hooks, preserve that behavior.
+3. When the repo requires `AI_MODE=1` for commit / push / hooks, preserve that behavior.
+4. When asked to commit, create the commit within the requested scope without asking for message approval. Report its hash and subject.
 
-## Message Shape
+For message-only requests, return one recommended message. Offer alternatives only when asked.
 
-Use Conventional Commits:
+## Message format
 
 ```text
 <type>[optional scope]: <description> [optional issue key]
@@ -26,31 +23,16 @@ Use Conventional Commits:
 [optional body]
 ```
 
-## Rules
-
-- Keep the subject anchored to the main outcome, not a file list.
-- Use lowercase imperative style and no trailing period.
-- Use a one-line commit when the change is small and obvious.
-- Add a short body when the change is non-trivial, spans multiple areas, or needs rationale.
-- Body should explain outcome and reason, not narrate implementation steps.
-- Scope is optional. Use it only when it adds signal.
-- Prefer specific subjects over vague ones like `update ui` or `minor fixes`.
+- Write the subject and any body in English, unless the user explicitly requests another language.
+- Describe the main outcome in a specific, lowercase imperative subject, with no trailing period.
+- Add a scope when it clarifies which part of the code changed.
+- A subject is enough for small, obvious changes. Add a short body when the change spans several areas or needs explanation.
+- Use the body to explain what changed and why.
 
 ## Types
 
-- `feat`: new visible capability
+- `feat`: new functionality
 - `fix`: corrected behavior
-- `refactor`: internal restructuring without intended behavior change
-- `perf`: performance-focused change
-- `docs`, `test`, `chore`, `ci`, `style`: conventional meaning
-
-## Output
-
-When proposing options, provide 3 variants with distinct strengths, for example:
-- most direct
-- most product/outcome oriented
-- most technical/scope specific
-
-Do not create or amend the commit until the user selects one variant or provides the exact final message.
-
-When the user already gave the exact message, use it unless it conflicts with explicit repo policy.
+- `refactor`: internal restructuring without intended behavior changes
+- `perf`: performance improvement
+- `docs`, `test`, `chore`, `ci`, `style`: use their Conventional Commits meanings
